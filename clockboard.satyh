@@ -1,0 +1,75 @@
+@require: list
+@require: gr
+@require: color
+
+
+module ClockBoard : sig
+
+  val clock-board : context -> float -> inline-text list -> inline-boxes
+  direct \clock-board : [float] inline-cmd
+
+end = struct
+
+let arabic-list = {| 01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 | 12 |}
+let roman-list = {| I | II | III | IV | V | VI | VII | VIII | IX | X | XI | XII |}
+
+
+let get-time-number n hour-list =
+  let get-time = List.nth (n - 1) hour-list in
+    match get-time with
+    | None -> {?}
+    | Some(it) -> it
+
+let pi = 3.14159265359
+
+
+let clock-board ctx size-ratio hour-list =
+  let color = get-text-color ctx in
+  let font-size = get-font-size ctx in
+  let size = font-size *' size-ratio in
+  let center (x, y) = (x +' size *' 0.5, y) in
+
+  % 外枠
+  let main-flame-r = size *' 0.5 in
+  let main-flame-thickness = size *' 0.02 in
+
+  % 中心の穴
+
+  % 数字を設置
+  let set-hour-number ctx (x, y) n =
+    let angle = ((pi *. 2.0) /. 12.0) *. (float n) -. (pi *. 0.5) in
+    let xp = ((1pt *' cos angle) *' ((size /' 1pt) *. 0.5)) *' 0.8 in
+    let yp = ((-1pt *' sin angle) *' ((size /' 1pt) *. 0.5)) *' 0.8 in
+    let text = get-time-number n hour-list in
+    let ctx-num = set-font-size (size *' 0.08) ctx in
+    let ib-text = read-inline ctx-num text in
+    let (w, h, d) = get-natural-metrics ib-text in
+      draw-text (x +' xp -' (w *' 0.5), y +' yp +' d -' ((d +' h) *' 0.5)) ib-text
+  in
+
+
+  let (w, h, d) = (size, main-flame-r, main-flame-r) in
+    inline-graphics w h d (fun (x, y) ->
+      [
+        fill color (Gr.circle (center (x, y)) main-flame-r);
+        fill Color.white (Gr.circle (center (x, y)) (main-flame-r -' main-flame-thickness));
+        set-hour-number ctx (center (x, y)) 1;
+        set-hour-number ctx (center (x, y)) 2;
+        set-hour-number ctx (center (x, y)) 3;
+        set-hour-number ctx (center (x, y)) 4;
+        set-hour-number ctx (center (x, y)) 5;
+        set-hour-number ctx (center (x, y)) 6;
+        set-hour-number ctx (center (x, y)) 7;
+        set-hour-number ctx (center (x, y)) 8;
+        set-hour-number ctx (center (x, y)) 9;
+        set-hour-number ctx (center (x, y)) 10;
+        set-hour-number ctx (center (x, y)) 11;
+        set-hour-number ctx (center (x, y)) 12;
+      ]
+    )
+
+
+
+let-inline ctx \clock-board size-ratio = clock-board ctx size-ratio arabic-list
+
+end

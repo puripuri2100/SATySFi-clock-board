@@ -1,0 +1,9 @@
+@require: stdjareport
+@import: clockboard
+
+document (|
+  title = {};
+  author = {};
+|) '<
+  +p{\clock-board (30.0);}
+>
